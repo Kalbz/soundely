@@ -1,6 +1,5 @@
 let fft;
 let mic;
-let startButton, playExistingButton, createRandomButton;
 let audioContextStarted = false;
 let sound; // Variable to store the sound file
 let speedMultiplier = 6;
@@ -13,26 +12,27 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(1440, 900);
+  let canvas = createCanvas(windowWidth, windowHeight);
+  canvas.parent('canvas');
   noStroke();
 
   fft = new p5.FFT();
   mic = new p5.AudioIn();
 
-  startButton = createButton('Start Audio');
-  startButton.position(10, height + 10);
-  startButton.mousePressed(startAudio);
+  const startButton = document.getElementById('startAudio');
+  startButton.addEventListener('click', startAudio);
 
-  // Create a button to play existing audio
-  playExistingButton = createButton('Use Existing Audio');
-  playExistingButton.position(startButton.width + 20, height + 10);
-  playExistingButton.mousePressed(playExistingAudio);
+  const existingAudioButton = document.getElementById('useExistingAudio');
+  existingAudioButton.addEventListener('click', playExistingAudio);
 
-  createRandomButton = createButton('Create Random');
-  createRandomButton.position(playExistingButton.width + 50, height + 10);
-  createRandomButton.mousePressed(createRandomDrawing);
+  const randomButton = document.getElementById('createRandomDrawing');
+  randomButton.addEventListener('click', createRandomDrawing);
 
+}
 
+function windowResized() {
+  // Resize the canvas when the window is resized
+  resizeCanvas(windowWidth, windowHeight); // Adjust as needed
 }
 
 function createRandomDrawing() {
@@ -47,8 +47,6 @@ function startAudio() {
     getAudioContext().resume().then(() => {
       console.log('Audio Context resumed!');
       audioContextStarted = true;
-      startButton.hide();
-      playExistingButton.hide();
 
       mic.start(() => {
         fft.setInput(mic);
@@ -64,8 +62,6 @@ function playExistingAudio() {
     getAudioContext().resume().then(() => {
       console.log('Audio Context resumed!');
       audioContextStarted = true;
-      startButton.hide();
-      playExistingButton.hide();
 
       if (mic.enabled) {
         mic.stop();
@@ -99,7 +95,7 @@ function draw() {
     }
 
     let avgFreq = count > 0 ? total / count : 0;
-    
+
     maxAvgFreq = Math.max(maxAvgFreq, avgFreq); // Update the maximum average frequency
 
     let y = map(avgFreq, 0, maxAvgFreq, height, 0); // Dynamically map using the maximum average frequency

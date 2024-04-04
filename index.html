@@ -3,13 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>p5.js Sketch</title>
-    <link rel="stylesheet" href="style.css">
+    <title>soundely</title>
+    <link rel="stylesheet" href="dist/style.css">
     <link href="output.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
 </head>
-<body>
-    
+<body class="bg-gray-100 m-0 overflow-hidden flex flex-col">
+
+    <nav class="fixed top-0 w-full flex items-center justify-between px-4 py-2 bg-blue-600 z-10">
+        <div class="flex-1">
+            <button id="startAudio" class="px-4 py-2 bg-blue-500 text-white rounded-lg mr-2 hover:bg-blue-700">Start Audio</button>
+            <button id="useExistingAudio" class="px-4 py-2 bg-green-500 text-white rounded-lg mr-2 hover:bg-green-700">Use Existing Audio</button>
+            <button id="createRandomDrawing" class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-700">Random Image</button>
+        </div>
+        <div class="flex-1 text-center">
+            <h1 class="text-4xl font-bold text-white inline-block">soundely</h1>
+        </div>
+        <!-- This empty div ensures the title remains centered -->
+        <div class="flex-1"></div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-grow"> <!-- Padding top (pt-16) gives space for the fixed navbar -->
+        
+        <!-- Inspector Panel -->
+        <div class="w-1/6 bg-red-500 overflow-y-auto"> <!-- Takes 15% of the width -->
+            <!-- Add your inspector content here -->
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="w-5/6 flex justify-end bg-blue-500"> <!-- Takes the remaining 85% of the width -->
+            <div id="canvas" class="w-full"></div>
+        </div>
+        
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
     <script src="sketch.js"></script>
