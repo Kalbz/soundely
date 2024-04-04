@@ -28,11 +28,48 @@ function setup() {
   const randomButton = document.getElementById('createRandomDrawing');
   randomButton.addEventListener('click', createRandomDrawing);
 
+
+  // Get the file input and button elements
+  const fileInput = document.getElementById('fileInput');
+  const fileInputButton = document.getElementById('handleFile');
+
+  // When the button is clicked, trigger the file input click event
+  fileInputButton.addEventListener('click', function() {
+    fileInput.click();
+  });
+
+  // Handle the file when it is selected
+  fileInput.addEventListener('change', function(event) {
+    if (this.files && this.files[0]) {
+      handleFile(this.files[0]);
+    }
+  });
+
 }
 
 function windowResized() {
   // Resize the canvas when the window is resized
   resizeCanvas(windowWidth, windowHeight); // Adjust as needed
+}
+
+function handleFile(file) {
+  if (file.type.startsWith('audio')) {
+    // If a previous sound was playing, stop it
+    if (sound && sound.isPlaying()) {
+      sound.stop();
+    }
+
+    // Load and play the sound file
+    sound = loadSound(file, playSound);
+  } else {
+    console.log('Not an audio file!');
+  }
+}
+
+function playSound() {
+  sound.play();
+  audioContextStarted = true;
+  console.log('Playing sound');
 }
 
 function createRandomDrawing() {
