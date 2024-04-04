@@ -1,12 +1,14 @@
 let fft;
 let mic;
-let startButton;
-let audioContextStarted = false; // Flag to track audio context state
-let speedMultiplier = 6; // Increase this to make the visualization move faster
-let gap = 12; // Draw a rectangle every 'gap' frames
+let startButton, playExistingButton, createRandomButton;
+let audioContextStarted = false;
+let sound; // Variable to store the sound file
+let speedMultiplier = 6;
+let gap = 12;
+let maxAvgFreq = 0; // Global variable to track the maximum observed average frequency
+
 
 function preload() {
-  // Load a sound file
   sound = loadSound('RTK.mp3');
 }
 
@@ -14,65 +16,109 @@ function setup() {
   createCanvas(1440, 900);
   noStroke();
 
-  // Initialize FFT and microphone without starting them
   fft = new p5.FFT();
   mic = new p5.AudioIn();
 
-  // Create a start button for user interaction
   startButton = createButton('Start Audio');
-  startButton.position(10, height + 10); // Position it below the canvas
-  startButton.mousePressed(startAudio); // Specify function to call on press
+  startButton.position(10, height + 10);
+  startButton.mousePressed(startAudio);
 
-  
+  // Create a button to play existing audio
+  playExistingButton = createButton('Use Existing Audio');
+  playExistingButton.position(startButton.width + 20, height + 10);
+  playExistingButton.mousePressed(playExistingAudio);
+
+  createRandomButton = createButton('Create Random');
+  createRandomButton.position(playExistingButton.width + 50, height + 10);
+  createRandomButton.mousePressed(createRandomDrawing);
+
+
+}
+
+function createRandomDrawing() {
+  for (let i = 0; i < 1000; i++) {
+  fill(random(255), random(255), random(255));
+  rect(random(width), random(height), 50, 50);
+  }
 }
 
 function startAudio() {
   if (!audioContextStarted) {
-    // Explicitly resume the audio context if needed
     getAudioContext().resume().then(() => {
       console.log('Audio Context resumed!');
       audioContextStarted = true;
-      startButton.hide(); // Hide the start button after audio has started
-      
-      // Start microphone input and set FFT input
+      startButton.hide();
+      playExistingButton.hide();
+
       mic.start(() => {
-        // Microphone started
         fft.setInput(mic);
       }, (e) => {
-        console.error(e); // Log error if microphone doesn't start
+        console.error(e);
       });
     }).catch(e => console.error(e));
   }
 }
-function draw() {
-  let spectrum = fft.analyze();
-  let total = 0;
-  let count = 0;
 
-  for (let i = 0; i < spectrum.length; i++) {
-    let amplitude = spectrum[i];
-    // Calculating the frequency for the current bin
-    let frequency = i * (sampleRate() / 2) / spectrum.length;
-    if (amplitude > 0) {
-      total += frequency * amplitude * 6;
-      count += amplitude;
-    }
-  }
-  
-  let avgFreq = count > 0 ? total / count : 0;
-  // Adjust the mapping range to limit how low the rectangles can go
-  // For example, mapping to the upper half or a third of the canvas
-  let y = map(avgFreq, 0, sampleRate() / 2, height, 0);
+function playExistingAudio() {
+  if (!audioContextStarted) {
+    getAudioContext().resume().then(() => {
+      console.log('Audio Context resumed!');
+      audioContextStarted = true;
+      startButton.hide();
+      playExistingButton.hide();
 
-  
-  let x = (frameCount * speedMultiplier) % width;
+      if (mic.enabled) {
+        mic.stop();
+        console.log('Microphone stopped');
+      }
 
-  // Draw a rectangle only on specific frames to introduce gaps
-  if (frameCount % gap === 0) {
-    // Randomize the color
-    fill(random(255), random(255), random(255));
-    rect(x, y, 100, 100); // Drawing the rectangle
+      // Set the FFT input and play the sound
+      fft.setInput(sound);
+      sound.loop(); // Use loop() for continuous play, replace with sound.play() for normal behavior
+      console.log('Playing sound');
+    }).catch(e => console.error(e));
   }
 }
 
+function draw() {
+  if (audioContextStarted) {
+    let spectrum = fft.analyze();
+    let total = 0;
+    let count = 0;
+
+    // Debugging: Log the length of the spectrum array to ensure FFT is running
+    console.log('Spectrum length:', spectrum.length);
+
+    for (let i = 0; i < spectrum.length; i++) {
+      let amplitude = spectrum[i];
+      let frequency = i * (sampleRate() / 2) / spectrum.length;
+      if (amplitude > 0) {
+        total += frequency * amplitude * 6;
+        count += amplitude;
+      }
+    }
+
+    let avgFreq = count > 0 ? total / count : 0;
+    
+    maxAvgFreq = Math.max(maxAvgFreq, avgFreq); // Update the maximum average frequency
+
+    let y = map(avgFreq, 0, maxAvgFreq, height, 0); // Dynamically map using the maximum average frequency
+    y = constrain(y, 0, height); // Ensure y stays within the canvas bounds
+    
+    let x = (frameCount * speedMultiplier) % width;
+
+    // Debugging: Log sample spectrum values and calculated average frequency
+    if (frameCount % 60 === 0) { // Log once every second at 60fps
+      console.log('Sample spectrum value:', spectrum[0], spectrum[Math.floor(spectrum.length / 2)]);
+      console.log('Average Frequency:', avgFreq);
+    }
+
+    if (frameCount % gap === 0) {
+      console.log(`Drawing at x=${x}, y=${y}`); // Debugging
+      fill(random(255), random(255), random(255));
+      rect(x, y, 100, 100);
+    }
+    
+  }
+}
 
