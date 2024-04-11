@@ -6,6 +6,21 @@ let speedMultiplier = 6;
 let gap = 12;
 let maxAvgFreq = 0; // Global variable to track the maximum observed average frequency
 
+const speedMultiplierSlider = document.getElementById('speedMultiplierSlider');
+const speedMultiplierValue = document.getElementById('speedMultiplierValue');
+const gapSlider = document.getElementById('gapSlider');
+const gapValue = document.getElementById('gapValue');
+
+speedMultiplierSlider.addEventListener('input', function() {
+    speedMultiplier = parseFloat(this.value);
+    speedMultiplierValue.textContent = this.value;
+});
+
+gapSlider.addEventListener('input', function() {
+    gap = parseInt(this.value);
+    gapValue.textContent = this.value;
+});
+
 
 function preload() {
   sound = loadSound('RTK.mp3');
@@ -34,12 +49,12 @@ function setup() {
   const fileInputButton = document.getElementById('handleFile');
 
   // When the button is clicked, trigger the file input click event
-  fileInputButton.addEventListener('click', function() {
+  fileInputButton.addEventListener('click', function () {
     fileInput.click();
   });
 
   // Handle the file when it is selected
-  fileInput.addEventListener('change', function(event) {
+  fileInput.addEventListener('change', function (event) {
     if (this.files && this.files[0]) {
       handleFile(this.files[0]);
     }
@@ -74,8 +89,8 @@ function playSound() {
 
 function createRandomDrawing() {
   for (let i = 0; i < 1000; i++) {
-  fill(random(255), random(255), random(255));
-  rect(random(width), random(height), 50, 50);
+    fill(random(255), random(255), random(255));
+    rect(random(width), random(height), 50, 50);
   }
 }
 
@@ -137,7 +152,7 @@ function draw() {
 
     let y = map(avgFreq, 0, maxAvgFreq, height, 0); // Dynamically map using the maximum average frequency
     y = constrain(y, 0, height); // Ensure y stays within the canvas bounds
-    
+
     let x = (frameCount * speedMultiplier) % width;
 
     // Debugging: Log sample spectrum values and calculated average frequency
@@ -151,7 +166,7 @@ function draw() {
       fill(random(255), random(255), random(255));
       rect(x, y, 100, 100);
     }
-    
+
   }
 }
 
