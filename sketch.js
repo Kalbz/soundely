@@ -6,6 +6,11 @@ let speedMultiplier = 6;
 let gap = 12;
 let maxAvgFreq = 0; // Global variable to track the maximum observed average frequency
 
+let drawRect;
+let drawCircle;
+let drawTriangle;
+let drawLine;
+
 const speedMultiplierSlider = document.getElementById('speedMultiplierSlider');
 const speedMultiplierValue = document.getElementById('speedMultiplierValue');
 const gapSlider = document.getElementById('gapSlider');
@@ -88,10 +93,39 @@ function playSound() {
 }
 
 function createRandomDrawing() {
+
+  drawRect = document.getElementById('shapeRect').checked;
+  drawCircle = document.getElementById('shapeCircle').checked;
+  drawTriangle = document.getElementById('shapeTriangle').checked;
+  drawLine = document.getElementById('shapeLine').checked;
+
+  console.log('drawRect:', drawRect);
+  console.log('drawCircle:', drawCircle);
+  console.log('drawTriangle:', drawTriangle);
+  console.log('drawLine:', drawLine);
+
   for (let i = 0; i < 1000; i++) {
-    fill(random(255), random(255), random(255));
-    rect(random(width), random(height), 50, 50);
-  }
+    fill(random(255), random(255), random(255)); // Keep the random colors for now
+
+    // Randomly choose position and size for the shapes
+    let x = random(width);
+    let y = random(height);
+    let size = random(20, 50);
+
+    // Draw the selected shapes
+    if (drawRect) {
+        rect(x, y, size, size);
+    }
+    if (drawCircle) {
+        ellipse(x, y, size, size);
+    }
+    if (drawTriangle) {
+        triangle(x, y, x + size, y, x + size / 2, y - size);
+    }
+    if (drawLine) {
+        line(x, y, x + size, y + size);
+    }
+}
 }
 
 function startAudio() {
