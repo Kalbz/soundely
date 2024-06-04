@@ -48,6 +48,12 @@ function setup() {
   const randomButton = document.getElementById('createRandomDrawing');
   randomButton.addEventListener('click', createRandomDrawing);
 
+  const abstractButton = document.getElementById('createAbstractDrawing');
+  abstractButton.addEventListener('click', createAbstractDrawing);
+
+  const nonIntersectButton = document.getElementById('createNonIntersectDrawing');
+  nonIntersectButton.addEventListener('click',createNonIntersectDrawing);
+
 
   // Get the file input and button elements
   const fileInput = document.getElementById('fileInput');
@@ -127,6 +133,97 @@ function createRandomDrawing() {
     }
 }
 }
+
+function createAbstractDrawing() {
+  wipeCanvas()
+  // Generate a set number of triangles
+  for (let i = 0; i < 10; i++) {
+    // Choose three random points for the triangle
+    let x1 = random(width);
+    let y1 = random(height);
+    let x2 = random(width);
+    let y2 = random(height);
+    let x3 = random(width);
+    let y3 = random(height);
+
+    // Define two colors for the gradient
+    let c1 = color(random(255), random(255), random(255), random(100, 200));
+    let c2 = color(random(255), random(255), random(255), random(100, 200));
+    
+    // Draw the triangle with a gradient
+    drawGradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2);
+  }
+}
+
+function drawGradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2) {
+  // Start shape
+  beginShape();
+
+  // Vertex 1
+  fill(c1);
+  vertex(x1, y1);
+  
+  // Vertex 2
+  // Interpolate halfway for color
+  fill(lerpColor(c1, c2, 0.5));
+  vertex(x2, y2);
+
+  // Vertex 3
+  fill(c2);
+  vertex(x3, y3);
+
+  endShape(CLOSE);
+}
+
+function createNonIntersectDrawing() {
+  wipeCanvas(); // Assuming you have a wipeCanvas function to clear the screen
+
+  const cols = 10; // Define the number of columns in the grid
+  const rows = 10; // Define the number of rows in the grid
+  const cellWidth = width / cols; // Width of each grid cell
+  const cellHeight = height / rows; // Height of each grid cell
+
+  for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+          // Calculate the center of the grid cell
+          const centerX = i * cellWidth + cellWidth / 2;
+          const centerY = j * cellHeight + cellHeight / 2;
+          
+          // Generate the vertices of the triangle around the center
+          const points = generateTrianglePoints(centerX, centerY, cellWidth, cellHeight);
+          
+          // Draw the triangle
+          triangle(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y);
+      }
+  }
+}
+
+function generateTrianglePoints(cx, cy, cellWidth, cellHeight) {
+  // You can vary the size of the triangle here
+  const margin = 0.2; // Margin from the edges of the cell
+
+  const halfWidth = cellWidth * (1 - margin) / 2;
+  const halfHeight = cellHeight * (1 - margin) / 2;
+
+  // Create 3 points for the triangle within the cell boundary
+  let p1 = createVector(cx - halfWidth, cy - halfHeight);
+  let p2 = createVector(cx + halfWidth, cy - halfHeight);
+  let p3 = createVector(cx, cy + halfHeight);
+
+  // Return the points in an array
+  return [p1, p2, p3];
+}
+
+
+function wipeCanvas() {
+  // Use clear() for a transparent canvas
+  clear();
+  
+  // If you want to reset with a background color, e.g., white:
+  // background(255);
+}
+
+
 
 function startAudio() {
   if (!audioContextStarted) {
