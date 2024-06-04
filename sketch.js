@@ -133,26 +133,95 @@ function createRandomDrawing() {
     }
 }
 }
-
 function createAbstractDrawing() {
-  wipeCanvas()
+  wipeCanvas();
+
+  // Initialize a set to store excluded pixels
+  const excludedPixels = new Set();
+
   // Generate a set number of triangles
   for (let i = 0; i < 10; i++) {
-    // Choose three random points for the triangle
-    let x1 = random(width);
-    let y1 = random(height);
-    let x2 = random(width);
-    let y2 = random(height);
-    let x3 = random(width);
-    let y3 = random(height);
+    let validTriangle = false;
+    let x1, y1, x2, y2, x3, y3;
+
+    while (!validTriangle) {
+      // Choose three random points for the triangle
+      x1 = random(width);
+      y1 = random(height);
+      x2 = random(width);
+      y2 = random(height);
+      x3 = random(width);
+      y3 = random(height);
+
+      // Check if the triangle's area has any excluded pixels
+      if (!isAreaExcluded(excludedPixels, x1, y1, x2, y2, x3, y3)) {
+        validTriangle = true;
+      }
+    }
 
     // Define two colors for the gradient
-    let c1 = color(random(255), random(255), random(255), random(100, 200));
-    let c2 = color(random(255), random(255), random(255), random(100, 200));
-    
+    let c1 = color(random(255), random(255), random(255));
+    let c2 = color(random(255), random(255), random(255));
+
     // Draw the triangle with a gradient
     drawGradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2);
+
+    // Exclude the triangle's area
+    excludeArea(excludedPixels, x1, y1, x2, y2, x3, y3);
   }
+}
+
+function excludePixel(excludedPixels, x, y) {
+  excludedPixels.add(`${Math.round(x)},${Math.round(y)}`);
+}
+
+function isPixelExcluded(excludedPixels, x, y) {
+  return excludedPixels.has(`${Math.round(x)},${Math.round(y)}`);
+}
+
+function excludeArea(excludedPixels, x1, y1, x2, y2, x3, y3) {
+  const minX = Math.floor(Math.min(x1, x2, x3));
+  const maxX = Math.ceil(Math.max(x1, x2, x3));
+  const minY = Math.floor(Math.min(y1, y2, y3));
+  const maxY = Math.ceil(Math.max(y1, y2, y3));
+
+  for (let x = minX; x <= maxX; x++) {
+    for (let y = minY; y <= maxY; y++) {
+      if (isPointInTriangle(x, y, x1, y1, x2, y2, x3, y3)) {
+        excludePixel(excludedPixels, x, y);
+      }
+    }
+  }
+}
+
+function isAreaExcluded(excludedPixels, x1, y1, x2, y2, x3, y3) {
+  const minX = Math.floor(Math.min(x1, x2, x3));
+  const maxX = Math.ceil(Math.max(x1, x2, x3));
+  const minY = Math.floor(Math.min(y1, y2, y3));
+  const maxY = Math.ceil(Math.max(y1, y2, y3));
+
+  for (let x = minX; x <= maxX; x++) {
+    for (let y = minY; y <= maxY; y++) {
+      if (isPointInTriangle(x, y, x1, y1, x2, y2, x3, y3) && isPixelExcluded(excludedPixels, x, y)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function isPointInTriangle(px, py, x1, y1, x2, y2, x3, y3) {
+  const areaOrig = triangleArea(x1, y1, x2, y2, x3, y3);
+  const area1 = triangleArea(px, py, x2, y2, x3, y3);
+  const area2 = triangleArea(x1, y1, px, py, x3, y3);
+  const area3 = triangleArea(x1, y1, x2, y2, px, py);
+
+  // Check if the sum of the areas is approximately equal to the original area
+  return Math.abs(areaOrig - (area1 + area2 + area3)) < 0.01;
+}
+
+function triangleArea(x1, y1, x2, y2, x3, y3) {
+  return Math.abs((x1*(y2 - y3) + x2*(y3 - y1) + x3*(y1 - y2)) / 2.0);
 }
 
 function drawGradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2) {
@@ -162,7 +231,7 @@ function drawGradientTriangle(x1, y1, x2, y2, x3, y3, c1, c2) {
   // Vertex 1
   fill(c1);
   vertex(x1, y1);
-  
+
   // Vertex 2
   // Interpolate halfway for color
   fill(lerpColor(c1, c2, 0.5));
